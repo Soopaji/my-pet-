@@ -1,8 +1,16 @@
 let pet = null;
-const API_KEY = "AIzaSyCWjlAAysIa65rncjBnn_J0UQL8qGMDACM"; // Make sure this is correct
+const API_KEY = "AIzaSyCWjlAAysIa65rncjBnn_J0UQL8qGMDACM"; // Replace with your actual API key
+
+const petTypes = {
+    dog: { sound: "Woof!", defaultImage: "assets/dog.png" },
+    cat: { sound: "Meow!", defaultImage: "assets/cat.png" },
+    rabbit: { sound: "Squeak!", defaultImage: "assets/rabbit.png" },
+    dragon: { sound: "Roar!", defaultImage: "assets/dragon.png" }
+};
 
 function createPet() {
     const name = document.getElementById("pet-name").value;
+    const type = document.getElementById("pet-type").value;
     const fileInput = document.getElementById("pet-image-upload");
 
     if (!name) {
@@ -10,9 +18,16 @@ function createPet() {
         return;
     }
 
-    pet = { name, happiness: 100, energy: 100 };
-    document.getElementById("pet-info").innerText = `${name} is here!`;
+    pet = {
+        name,
+        type,
+        happiness: 100,
+        energy: 100,
+        sound: petTypes[type].sound
+    };
 
+    document.getElementById("pet-info").innerText = `${name} the ${type} is here!`;
+    
     if (fileInput.files.length > 0) {
         const reader = new FileReader();
         reader.onload = function (e) {
@@ -20,14 +35,14 @@ function createPet() {
         };
         reader.readAsDataURL(fileInput.files[0]);
     } else {
-        document.getElementById("pet-image").src = "assets/placeholder.png";
+        document.getElementById("pet-image").src = petTypes[type].defaultImage;
     }
 }
 
 async function generateAIResponse(prompt) {
     if (!pet) return "Please create a pet first!";
     
-    const fullPrompt = `You are a pet named ${pet.name}. Respond in a cute and fun way! Message: ${prompt}`;
+    const fullPrompt = `You are a ${pet.type} named ${pet.name}. Respond with a ${pet.type}-like personality. First line must start with "${pet.sound}". Message: ${prompt}`;
 
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
@@ -39,7 +54,7 @@ async function generateAIResponse(prompt) {
         if (!response.ok) throw new Error("API Error: " + response.statusText);
 
         const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || "I don't know what to say!";
+        return pet.sound + " " + (data.candidates?.[0]?.content?.parts?.[0]?.text || "I don't know what to say!");
     } catch (error) {
         console.error("Error:", error);
         return "Oops! The AI is not responding.";
