@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Pet</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🐾 Create Your Virtual Pet</h1>
+        <div class="customization">
+            <input type="text" id="pet-name" placeholder="Enter pet name">
+            <select id="pet-type">
+                <option value="dog">Dog</option>
+                <option value="cat">Cat</option>
+                <option value="parrot">Parrot</option>
+                <option value="rabbit">Rabbit</option>
+            </select>
+            <button onclick="createPet()">Create Pet</button>
+        </div>
+
+        <div id="pet-display">
+            <img id="pet-image" src="assets/placeholder.png" alt="Your Pet">
+            <p id="pet-info">No pet created yet.</p>
+        </div>
+
+        <div class="controls">
+            <button onclick="sendMessage('feed')">🍖 Feed</button>
+            <button onclick="sendMessage('play')">🎾 Play</button>
+            <button onclick="sendMessage('check mood')">💖 Mood</button>
+        </div>
+
+        <div id="pet-stats">
+            <p>Happiness: <span id="happiness-level">100</span> 😊</p>
+            <p>Energy: <span id="energy-level">100</span> ⚡</p>
+        </div>
+
+        <h2>💬 Chat with Your Pet</h2>
+        <div id="chat-output"></div>
+        <div class="chat-container">
+            <input type="text" id="user-input" placeholder="Talk to your pet...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
