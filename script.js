@@ -1,20 +1,23 @@
 let pet = null;
-const API_KEY = "AIzaSyCWjlAAysIa65rncjBnn_J0UQL8qGMDACM"; // Replace with your actual API key
+
+const API_KEY = "AIzaSyCWjlAAysIa65rncjBnn_J0UQL8qGMDACM"; 
 
 const petTypes = {
     dog: { sound: "Woof!", defaultImage: "assets/dog.png" },
     cat: { sound: "Meow!", defaultImage: "assets/cat.png" },
     rabbit: { sound: "Squeak!", defaultImage: "assets/rabbit.png" },
-    dragon: { sound: "Roar!", defaultImage: "assets/dragon.png" }
+    bird: { sound: "Chirp!", defaultImage: "assets/bird.png" }
 };
 
+// Handle pet creation
 function createPet() {
-    const name = document.getElementById("pet-name").value;
+    const name = document.getElementById("pet-name").value.trim();
     const type = document.getElementById("pet-type").value;
     const fileInput = document.getElementById("pet-image-upload");
+    const petImage = document.getElementById("pet-image");
 
     if (!name) {
-        alert("Enter a name for your pet!");
+        alert("Please enter a name for your pet!");
         return;
     }
 
@@ -23,86 +26,83 @@ function createPet() {
         type,
         happiness: 100,
         energy: 100,
-        sound: petTypes[type].sound
+        sound: petTypes[type]?.sound || "🐾"
     };
 
-    document.getElementById("pet-info").innerText = `${name} the ${type} is here!`;
-    
+    // Check if a custom pet image is uploaded
     if (fileInput.files.length > 0) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            petImage.src = e.target.result;
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+    } else {
+        petImage.src = petTypes[type]?.defaultImage || "assets/default-pet.png";
+    }
+
+    document.getElementById("pet-info").innerText = `${pet.name} the ${pet.type} is ready!`;
+    document.getElementById("speech-bubble").style.display = "none";
+}
+
+// Ensure uploaded image is shown before pet is created
+document.getElementById("pet-image-upload").addEventListener("change", function(event) {
+    const file = event.target.files[0];
+    if (file) {
         const reader = new FileReader();
         reader.onload = function (e) {
             document.getElementById("pet-image").src = e.target.result;
         };
-        reader.readAsDataURL(fileInput.files[0]);
-    } else {
-        document.getElementById("pet-image").src = petTypes[type].defaultImage;
+        reader.readAsDataURL(file);
     }
-}
+});
 
-async function generateAIResponse(prompt) {
-    if (!pet) return "Please create a pet first!";
-    
-    const fullPrompt = `You are a ${pet.type} named ${pet.name}. Respond with a ${pet.type}-like personality. First line must start with "${pet.sound}". Message: ${prompt}`;
-
-    try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: [{ parts: [{ text: fullPrompt }] }] })
-        });
-
-        if (!response.ok) throw new Error("API Error: " + response.statusText);
-
-        const data = await response.json();
-        const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-        // Silent mode: If AI response is empty or confusing, pet stays silent
-        if (!aiResponse.trim() || aiResponse.length < 5) {
-            return "... (Your pet stays silent)";
-        }
-
-        return pet.sound + " " + aiResponse;
-    } catch (error) {
-        console.error("Error:", error);
-        return "Oops! The AI is not responding.";
-    }
-}
-
-async function sendMessage(action = null) {
-    const userInput = action || document.getElementById("user-input").value;
+// Handle chat input & send AI request
+document.getElementById('send-button').addEventListener('click', async function () {
     if (!pet) {
         alert("Please create a pet first!");
         return;
     }
 
-    let petResponse;
-    if (userInput.toLowerCase() === "feed") {
-        pet.happiness += 10;
-        pet.energy += 5;
-        petResponse = `${pet.name} happily eats! 🍖`;
-    } else if (userInput.toLowerCase() === "play") {
-        pet.happiness += 5;
-        pet.energy -= 5;
-        petResponse = `${pet.name} enjoys playing! 🎾`;
-    } else if (userInput.toLowerCase() === "check mood") {
-        petResponse = pet.happiness > 80 ? `${pet.name} is very happy! 😊` :
-                      pet.happiness > 50 ? `${pet.name} is content. 🙂` :
-                      `${pet.name} seems a bit sad. 😢`;
-    } else {
-        petResponse = await generateAIResponse(userInput);
+    const userMessage = document.getElementById('user-input').value.trim();
+    if (!userMessage) return;
+
+    document.getElementById('chat-output').innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
+
+    const petResponse = await getAIResponse(userMessage);
+    document.getElementById('chat-output').innerHTML += `<p><strong>${pet.name}:</strong> ${petResponse}</p>`;
+
+    document.getElementById('speech-bubble').innerText = petResponse;
+    document.getElementById('speech-bubble').style.display = "block";
+
+    // Clear input field
+    document.getElementById('user-input').value = '';
+});
+
+// Fetch AI response using Google Gemini API
+async function getAIResponse(userMessage) {
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: `You are a ${pet.type} named ${pet.name}. Reply in a fun way to: "${userMessage}"` }] }]
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.candidates && data.candidates.length > 0) {
+            return pet.sound + " " + (data.candidates[0].content.parts[0].text || "Hmm... I don't know what to say! 🐾");
+        } else {
+            return pet.sound + " Oops! No response from the AI.";
+        }
+    } catch (error) {
+        console.error("Error fetching AI response:", error);
+        return pet.sound + " Sorry, I'm having trouble responding right now! 🐾";
     }
-
-    document.getElementById("chat-output").innerHTML += `<p><b>You:</b> ${userInput}</p>`;
-    document.getElementById("chat-output").innerHTML += `<p><b>${pet.name}:</b> ${petResponse}</p>`;
-
-    showSpeechBubble(petResponse);
 }
 
-function showSpeechBubble(text) {
-    const speechBubble = document.getElementById("speech-bubble");
-    speechBubble.innerText = text;
-    speechBubble.style.display = "block";
-    setTimeout(() => {
-        speechBubble.style.display = "none";
-    }, 3000);
-}
+// Attach event listener to create pet button
+document.getElementById("create-pet-button").addEventListener("click", createPet);
