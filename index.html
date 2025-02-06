@@ -7,28 +7,29 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Create Your Virtual Pet</h1>
+
     <div id="pet-creation">
-        <input type="text" id="pet-name" placeholder="Enter pet name...">
-        
+        <h2>Name Your Virtual Pet</h2>
+        <input type="text" id="pet-name" placeholder="Enter pet name..." />
+
         <label class="custom-file-upload">
             Upload Pet Image
             <input type="file" id="pet-image-upload" class="hidden-file-input" accept="image/*">
         </label>
 
-        <select id="pet-type" class="custom-select">
-            <option value="dog">Dog</option>
-            <option value="cat">Cat</option>
-            <option value="rabbit">Rabbit</option>
-            <option value="dragon">Dragon</option>
+        <select id="pet-type">
+            <option value="dog">🐶 Dog</option>
+            <option value="cat">🐱 Cat</option>
+            <option value="rabbit">🐰 Rabbit</option>
+            <option value="bird">🐦 Bird</option>
         </select>
 
-        <button onclick="createPet()">Create Pet</button>
+        <button id="create-pet-button">Create Pet</button>
     </div>
 
     <div id="pet-display">
+        <img id="pet-image" src="assets/placeholder.png" alt="Your pet">
         <div id="speech-bubble"></div>
-        <img id="pet-image" src="assets/placeholder.png" alt="Your Pet">
     </div>
 
     <div id="status">
@@ -42,9 +43,12 @@
     </div>
 
     <div id="chat-interface">
+        <h2>Chat with Your Pet</h2>
         <div id="chat-output"></div>
-        <input type="text" id="user-input" placeholder="Talk to your pet...">
-        <button onclick="sendMessage()">Send</button>
+        <div id="chat-box">
+            <input type="text" id="user-input" placeholder="Say something to your pet..." />
+            <button id="send-button">➡️</button>
+        </div>
     </div>
 
     <script src="script.js"></script>
