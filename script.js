@@ -54,7 +54,14 @@ async function generateAIResponse(prompt) {
         if (!response.ok) throw new Error("API Error: " + response.statusText);
 
         const data = await response.json();
-        return pet.sound + " " + (data.candidates?.[0]?.content?.parts?.[0]?.text || "I don't know what to say!");
+        const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+        // Silent mode: If AI response is empty or confusing, pet stays silent
+        if (!aiResponse.trim() || aiResponse.length < 5) {
+            return "... (Your pet stays silent)";
+        }
+
+        return pet.sound + " " + aiResponse;
     } catch (error) {
         console.error("Error:", error);
         return "Oops! The AI is not responding.";
