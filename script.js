@@ -1,7 +1,6 @@
 let pet = null;
 
-// 🔴 Replace with your actual Google Gemini API key from Google AI Studio.
-const API_KEY = "AIzaSyCWjlAAysIa65rncjBnn_J0UQL8qGMDACM"; 
+const API_KEY = "AIzaSyCWjlAAysIa65rncjBnn_J0UQL8qGMDACM";
 
 const petTypes = {
   dog: { sound: "Woof!", defaultImage: "assets/dog.png" },
@@ -30,24 +29,26 @@ function createPet() {
     sound: petTypes[type]?.sound || "🐾"
   };
 
-  // Use uploaded image if available; otherwise, use default image for the pet type.
+  // Use uploaded image if available; otherwise, use the default image for the selected type.
   if (fileInput.files.length > 0) {
     const reader = new FileReader();
     reader.onload = function (e) {
-      petImage.src = e.target.result;
+      pet.image = e.target.result; // store image data in pet object
+      petImage.src = pet.image;
     };
     reader.readAsDataURL(fileInput.files[0]);
   } else {
-    petImage.src = petTypes[type]?.defaultImage || "assets/default-pet.png";
+    pet.image = petTypes[type]?.defaultImage || "assets/default-pet.png";
+    petImage.src = pet.image;
   }
 
   document.getElementById("pet-info").innerText = `${pet.name} the ${pet.type} is ready!`;
   document.getElementById("speech-bubble").style.display = "none";
-  // Hide the pet creation box after creation
+  // Hide the pet creation box for a cleaner UI once the pet is created
   document.getElementById("pet-creation").style.display = "none";
 }
 
-// (Optional) Preview uploaded image immediately
+// Optional: Preview uploaded pet image immediately
 document.getElementById("pet-image-upload").addEventListener("change", function (event) {
   const file = event.target.files[0];
   if (file) {
@@ -59,19 +60,20 @@ document.getElementById("pet-image-upload").addEventListener("change", function 
   }
 });
 
-// Handle chat input and built-in commands (Feed, Play, Check Mood)
-// If an action parameter is provided (e.g. 'feed'), it will process that command directly.
+// Handle chat input & built-in commands (Feed, Play, Check Mood)
+// This function accepts an optional parameter 'action'. If provided (e.g. "feed"),
+// it uses that as the command; otherwise, it retrieves the text from the chat input.
 async function sendMessage(action) {
   if (!pet) {
     alert("Please create a pet first!");
     return;
   }
 
-  // Use the action parameter if provided; otherwise, get the text from the user input.
+  // Use the provided action, or if not provided, get the value from the input box.
   const command = action || document.getElementById("user-input").value.trim();
   if (!command) return;
 
-  // Append the user's message to the chat output.
+  // Append user's message to chat output.
   document.getElementById("chat-output").innerHTML += `<p><strong>You:</strong> ${command}</p>`;
 
   let petResponse = "";
@@ -97,18 +99,17 @@ async function sendMessage(action) {
       }
       break;
     default:
-      // For any other message, get a response from the Gemini AI API.
       petResponse = await getAIResponse(command);
       break;
   }
 
-  // Append the pet's response to the chat output.
+  // Append pet's response to chat output.
   document.getElementById("chat-output").innerHTML += `<p><strong>${pet.name}:</strong> ${petResponse}</p>`;
-  // Display the speech bubble with the pet's response.
+  // Show speech bubble with pet's response.
   document.getElementById("speech-bubble").innerText = petResponse;
   document.getElementById("speech-bubble").style.display = "block";
 
-  // If this is not a button command, clear the chat input.
+  // If the message was from the chat input (and not a button command), clear the input.
   if (!action) {
     document.getElementById("user-input").value = "";
   }
@@ -119,9 +120,7 @@ async function getAIResponse(userMessage) {
   try {
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [
           {
@@ -134,9 +133,7 @@ async function getAIResponse(userMessage) {
         ]
       })
     });
-
     const data = await response.json();
-
     if (data.candidates && data.candidates.length > 0) {
       return pet.sound + " " + (data.candidates[0].content.parts[0].text || "Hmm... I don't know what to say! 🐾");
     } else {
@@ -151,4 +148,7 @@ async function getAIResponse(userMessage) {
 // Attach event listener to the create pet button.
 document.getElementById("create-pet-button").addEventListener("click", createPet);
 
-// The control buttons in your HTML call sendMessage('feed'), sendMessage('play'), and sendMessage('check mood') respectively.
+// Attach event listener to the chat send button.
+document.getElementById("send-button").addEventListener("click", function () {
+  sendMessage();
+});
