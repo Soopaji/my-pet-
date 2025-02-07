@@ -1,56 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtual Pet</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Pet</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Pet Creation Section -->
+  <div id="pet-creation">
+    <h2>Name Your Virtual Pet</h2>
+    <input type="text" id="pet-name" placeholder="Enter pet name..." />
 
-    <div id="pet-creation">
-        <h2>Name Your Virtual Pet</h2>
-        <input type="text" id="pet-name" placeholder="Enter pet name..." />
+    <label class="custom-file-upload">
+      Upload Pet Image
+      <input type="file" id="pet-image-upload" class="hidden-file-input" accept="image/*">
+    </label>
 
-        <label class="custom-file-upload">
-            Upload Pet Image
-            <input type="file" id="pet-image-upload" class="hidden-file-input" accept="image/*">
-        </label>
+    <select id="pet-type">
+      <option value="dog">🐶 Dog</option>
+      <option value="cat">🐱 Cat</option>
+      <option value="rabbit">🐰 Rabbit</option>
+      <option value="bird">🐦 Bird</option>
+    </select>
 
-        <select id="pet-type">
-            <option value="dog">🐶 Dog</option>
-            <option value="cat">🐱 Cat</option>
-            <option value="rabbit">🐰 Rabbit</option>
-            <option value="bird">🐦 Bird</option>
-        </select>
+    <button id="create-pet-button">Create Pet</button>
+  </div>
 
-        <button id="create-pet-button">Create Pet</button>
+  <!-- Pet Display Section -->
+  <div id="pet-display">
+    <img id="pet-image" src="assets/placeholder.png" alt="Your pet">
+    <div id="speech-bubble"></div>
+  </div>
+
+  <!-- Status Section -->
+  <div id="status">
+    <p id="pet-info">No pet created yet.</p>
+  </div>
+
+  <!-- Controls Section -->
+  <div id="controls">
+    <button onclick="sendMessage('feed')">Feed</button>
+    <button onclick="sendMessage('play')">Play</button>
+    <button onclick="sendMessage('check mood')">Check Mood</button>
+  </div>
+
+  <!-- Chat Interface -->
+  <div id="chat-interface">
+    <h2>Chat with Your Pet</h2>
+    <div id="chat-output"></div>
+    <div id="chat-box">
+      <input type="text" id="user-input" placeholder="Say something to your pet..." />
+      <button id="send-button">➡️</button>
     </div>
+  </div>
 
-    <div id="pet-display">
-        <img id="pet-image" src="assets/placeholder.png" alt="Your pet">
-        <div id="speech-bubble"></div>
-    </div>
-
-    <div id="status">
-        <p id="pet-info">No pet created yet.</p>
-    </div>
-
-    <div id="controls">
-        <button onclick="sendMessage('feed')">Feed</button>
-        <button onclick="sendMessage('play')">Play</button>
-        <button onclick="sendMessage('check mood')">Check Mood</button>
-    </div>
-
-    <div id="chat-interface">
-        <h2>Chat with Your Pet</h2>
-        <div id="chat-output"></div>
-        <div id="chat-box">
-            <input type="text" id="user-input" placeholder="Say something to your pet..." />
-            <button id="send-button">➡️</button>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
