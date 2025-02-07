@@ -5,9 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Virtual Pet</title>
   <link rel="stylesheet" href="styles.css">
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <!-- Add Firestore -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-  <!-- Pet Creation Section -->
+
+  <!-- Pet Creation Section (hidden if a pet is loaded via shareable link) -->
   <div id="pet-creation">
     <h2>Name Your Virtual Pet</h2>
     <input type="text" id="pet-name" placeholder="Enter pet name..." />
@@ -22,6 +27,7 @@
       <option value="cat">🐱 Cat</option>
       <option value="rabbit">🐰 Rabbit</option>
       <option value="bird">🐦 Bird</option>
+      <option value="custom">🖼️ Custom</option>
     </select>
 
     <button id="create-pet-button">Create Pet</button>
@@ -38,7 +44,7 @@
     <p id="pet-info">No pet created yet.</p>
   </div>
 
-  <!-- Controls Section -->
+  <!-- Controls Section (for built-in commands) -->
   <div id="controls">
     <button onclick="sendMessage('feed')">Feed</button>
     <button onclick="sendMessage('play')">Play</button>
