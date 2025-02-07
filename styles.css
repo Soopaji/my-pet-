@@ -1,3 +1,4 @@
+/* Base Styles */
 body {
     font-family: 'Arial', sans-serif;
     text-align: center;
@@ -13,6 +14,7 @@ body {
     100% { background-position: 0% 50%; }
 }
 
+/* Container Styles for Pet Creation and Chat Interface */
 #pet-creation, #chat-interface {
     background-color: rgba(255, 255, 255, 0.2);
     padding: 20px;
@@ -24,6 +26,13 @@ body {
     backdrop-filter: blur(10px);
 }
 
+/* Ensure the chat interface starts below all content */
+#chat-interface {
+    clear: both;
+    margin-top: 30px;
+}
+
+/* Stylish Input Fields and Selects */
 input, select {
     width: 90%;
     padding: 12px;
@@ -38,11 +47,12 @@ input, select {
     transition: 0.3s;
 }
 
-input:focus {
+input:focus, select:focus {
     background: rgba(255, 255, 255, 0.5);
     box-shadow: 0px 0px 8px rgba(255, 255, 255, 0.8);
 }
 
+/* Button Styles */
 button {
     padding: 12px 20px;
     border-radius: 20px;
@@ -52,23 +62,25 @@ button {
     cursor: pointer;
     font-weight: bold;
     transition: 0.3s;
+    margin: 10px;
 }
 
 button:hover {
     background-color: rgba(255, 255, 255, 0.5);
 }
 
+/* Pet Display Section */
 #pet-display {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 15px auto;
+    margin: 50px auto;
     animation: petMove 3s infinite alternate ease-in-out;
 }
 
 @keyframes petMove {
-    0% { transform: translateY(0px); }
+    0% { transform: translateY(10px); }
     100% { transform: translateY(-10px); }
 }
 
@@ -80,14 +92,79 @@ button:hover {
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
 }
 
+/* Speech Bubble Styles */
 #speech-bubble {
     display: none;
     position: absolute;
-    top: -50px;
+    top: -39px;
     background: white;
     border-radius: 10px;
     padding: 10px;
     font-size: 14px;
     color: black;
     font-weight: bold;
+}
+
+/* Custom File Upload Styles */
+.custom-file-upload {
+    display: inline-block;
+    padding: 10px;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.3);
+    color: rgb(16, 16, 16);
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+.hidden-file-input {
+    display: none;
+}
+
+.custom-select {
+    background-color: rgba(255, 255, 255, 0.3);
+    color: rgb(12, 11, 11);
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Chat Box Styling */
+#chat-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#user-input {
+    width: calc(100% - 50px);
+    padding: 12px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    background: rgba(255, 255, 255, 0.3);
+    color: black;
+    outline: none;
+    transition: 0.3s;
+}
+
+#user-input:focus {
+    background: rgba(255, 255, 255, 0.5);
+    box-shadow: 0px 0px 8px rgba(255, 255, 255, 0.8);
+}
+
+#send-button {
+    padding: 12px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    color: black;
+    cursor: pointer;
+    font-size: 18px;
+    transition: 0.3s;
+}
+
+#send-button:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
