@@ -137,7 +137,7 @@ async function getAIResponse(userMessage) {
     if (data.candidates && data.candidates.length > 0) {
       return pet.sound + " " + (data.candidates[0].content.parts[0].text || "Hmm... I don't know what to say! 🐾");
     } else {
-      return pet.sound + " Hmm... I don't know what to say! 🐾";
+      return pet.name + ",Stay's silent";
     }
   } catch (error) {
     console.error("Error fetching AI response:", error);
