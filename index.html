@@ -11,7 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
   <script>
-   const firebaseConfig = {
+    const firebaseConfig = {
   apiKey: "AIzaSyA5iSJ7ZFH6WIX7sAA3rIctMOeuDCVcJ7M",
   authDomain: "my-pet-815f9.firebaseapp.com",
   projectId: "my-pet-815f9",
@@ -28,10 +28,11 @@
 
 <body>
 
+<!-- CREATE PET -->
 <div id="pet-creation">
-  <h1>🐾 Create Your Virtual Pet</h1>
+  <h2>Create Your Pet 🐾</h2>
 
-  <input id="owner-name" placeholder="Your name (owner)" />
+  <input id="owner-name" placeholder="Owner name" />
   <input id="pet-name" placeholder="Pet name" />
 
   <select id="pet-type">
@@ -53,11 +54,13 @@
   <button id="create-pet-button">Create Pet</button>
 </div>
 
+<!-- PET DISPLAY -->
 <div id="pet-display">
   <img id="pet-image" />
   <div id="speech-bubble"></div>
 </div>
 
+<!-- STATUS -->
 <div id="status">
   <p id="pet-info"></p>
 
@@ -74,16 +77,21 @@
   <p id="share-url"></p>
 </div>
 
+<!-- CONTROLS -->
 <div id="controls">
   <button onclick="sendMessage('feed')">🍖 Feed</button>
   <button onclick="sendMessage('play')">🎾 Play</button>
   <button onclick="sendMessage('check mood')">😊 Mood</button>
 </div>
 
+<!-- CHAT -->
 <div id="chat-interface">
   <div id="chat-output"></div>
-  <input id="user-input" placeholder="Say something..." />
-  <button id="send-button">➡️</button>
+
+  <div id="chat-box">
+    <input id="user-input" placeholder="Say something..." />
+    <button id="send-button">➡️</button>
+  </div>
 </div>
 
 <script src="script.js"></script>
