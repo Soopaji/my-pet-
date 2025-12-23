@@ -1,6 +1,28 @@
 let pet = null;
 const API_KEY = "AIzaSyAbDtNzUj_ZoXzl5kpfdpx2lyinVxX65wc";
 
+// ---------- DOM ELEMENTS ----------
+const petCreation = document.getElementById("pet-creation");
+const ownerName = document.getElementById("owner-name");
+const petName = document.getElementById("pet-name");
+const petType = document.getElementById("pet-type");
+const petPersonality = document.getElementById("pet-personality");
+const petImageUpload = document.getElementById("pet-image-upload");
+
+const createPetButton = document.getElementById("create-pet-button");
+
+const petImage = document.getElementById("pet-image");
+const petInfo = document.getElementById("pet-info");
+const shareUrl = document.getElementById("share-url");
+
+const happinessBar = document.getElementById("happiness-bar");
+const energyBar = document.getElementById("energy-bar");
+
+const chatOutput = document.getElementById("chat-output");
+const userInput = document.getElementById("user-input");
+const sendButton = document.getElementById("send-button");
+const speechBubble = document.getElementById("speech-bubble");
+
 /* ---------- CREATE PET ---------- */
 async function createPet() {
   const owner = ownerName.value.trim();
@@ -10,7 +32,7 @@ async function createPet() {
   const file = petImageUpload.files[0];
 
   if (!owner || !name || !personality) {
-    alert("Fill all fields 🐾");
+    alert("Please fill all fields 🐾");
     return;
   }
 
@@ -39,13 +61,16 @@ async function createPet() {
 /* ---------- LOAD PET ---------- */
 async function loadPet(id) {
   const snap = await db.collection("pets").doc(id).get();
-  if (!snap.exists) return alert("Pet not found");
+  if (!snap.exists) {
+    alert("Pet not found");
+    return;
+  }
 
   pet = { id, ...snap.data() };
   renderPet();
 
   const link = `${location.origin}${location.pathname}?pet=${id}`;
-  shareUrl.innerHTML = `Share: <a href="${link}" target="_blank">${link}</a>`;
+  shareUrl.innerHTML = `Share this pet: <a href="${link}" target="_blank">${link}</a>`;
 }
 
 /* ---------- UI ---------- */
@@ -64,7 +89,9 @@ async function sendMessage(action) {
   chatOutput.innerHTML += `<p><b>You:</b> ${msg}</p>`;
   let reply;
 
-  if (msg.toLowerCase().includes("owner")) {
+  const lower = msg.toLowerCase();
+
+  if (lower.includes("owner")) {
     reply = `I'm ${pet.owner}'s pet 💕`;
   } else if (msg === "feed") {
     pet.happiness = Math.min(100, pet.happiness + 10);
@@ -72,6 +99,13 @@ async function sendMessage(action) {
   } else if (msg === "play") {
     pet.energy = Math.max(0, pet.energy - 10);
     reply = "That was fun! 🎾";
+  } else if (msg === "check mood") {
+    reply =
+      pet.happiness > 70
+        ? "I'm very happy 😄"
+        : pet.happiness > 40
+        ? "I'm okay 🙂"
+        : "I'm a bit sad 🥺";
   } else {
     reply = await aiReply(msg);
   }
@@ -92,15 +126,16 @@ async function sendMessage(action) {
 
 /* ---------- GEMINI ---------- */
 async function aiReply(text) {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `
 You are a virtual pet.
 
 Name: ${pet.name}
@@ -117,14 +152,17 @@ Rules:
 
 User: "${text}"
 `
+            }]
           }]
-        }]
-      })
-    }
-  );
+        })
+      }
+    );
 
-  const data = await res.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text || "I wuv you 💕";
+    const data = await res.json();
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text || "I wuv you 💕";
+  } catch {
+    return "Come cuddle me 🥺";
+  }
 }
 
 /* ---------- STATS ---------- */
@@ -138,6 +176,7 @@ createPetButton.onclick = createPet;
 sendButton.onclick = () => sendMessage();
 userInput.onkeydown = e => e.key === "Enter" && sendMessage();
 
+/* ---------- LOAD FROM LINK ---------- */
 window.onload = () => {
   const id = new URLSearchParams(location.search).get("pet");
   if (id) loadPet(id);
