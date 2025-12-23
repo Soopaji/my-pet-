@@ -1,7 +1,7 @@
 let pet = null;
 
 // Gemini API key
-const API_KEY = "AIzaSyCWjlAAysIa65rncjBnn_J0UQL8qGMDACM";
+const API_KEY = "AIzaSyAbDtNzUj_ZoXzl5kpfdpx2lyinVxX65wc";
 
 // Pet types
 const petTypes = {
@@ -190,7 +190,7 @@ async function sendMessage(action) {
 
 // AI reply using Gemini API
 async function getAIResponse(userMessage) {
-  if (!API_KEY || API_KEY === "AIzaSyCWjlAAysIa65rncjBnn_J0UQL8qGMDACM") {
+  if (!API_KEY || API_KEY === "YOUR_GEMINI_API_KEY_HERE") {
     return (
       (petTypes[pet.type]?.sound || "🐾") +
       " (AI key missing, but I'm still cute! 💕)"
@@ -270,3 +270,4 @@ window.addEventListener("load", () => {
     loadPet(petId);
   }
 });
+
