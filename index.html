@@ -2,16 +2,62 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Virtual Pet</title>
-  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg,#6fffd6,#71a0ff,#ba5fff,#f9718e);
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .box {
+      background: rgba(255,255,255,0.25);
+      padding: 20px;
+      border-radius: 16px;
+      max-width: 420px;
+      margin: 15px auto;
+    }
+
+    input, textarea, select {
+      width: 90%;
+      padding: 10px;
+      margin: 8px 0;
+    }
+
+    button {
+      padding: 10px 16px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+    }
+
+    #pet-image {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #eee;
+    }
+
+    #chat-output {
+      background: rgba(255,255,255,0.3);
+      height: 200px;
+      overflow-y: auto;
+      padding: 10px;
+      text-align: left;
+    }
+  </style>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
   <script>
-    const firebaseConfig = {
+   const firebaseConfig = {
   apiKey: "AIzaSyA5iSJ7ZFH6WIX7sAA3rIctMOeuDCVcJ7M",
   authDomain: "my-pet-815f9.firebaseapp.com",
   projectId: "my-pet-815f9",
@@ -20,7 +66,6 @@
   appId: "1:262016555949:web:560a8a0f834e01be83df24",
   measurementId: "G-B82KQRJP9C"
 };
-
     firebase.initializeApp(firebaseConfig);
     window.db = firebase.firestore();
   </script>
@@ -28,70 +73,35 @@
 
 <body>
 
-<!-- CREATE PET -->
-<div id="pet-creation">
-  <h2>Create Your Pet 🐾</h2>
-
+<!-- CREATE -->
+<div class="box" id="pet-creation">
+  <h3>Create Pet 🐾</h3>
   <input id="owner-name" placeholder="Owner name" />
   <input id="pet-name" placeholder="Pet name" />
-
-  <select id="pet-type">
-    <option value="dog">🐶 Dog</option>
-    <option value="cat">🐱 Cat</option>
-    <option value="rabbit">🐰 Rabbit</option>
-    <option value="bird">🐦 Bird</option>
-    <option value="custom">✨ Custom</option>
-  </select>
-
-  <textarea
-    id="pet-personality"
-    placeholder="Describe your pet's personality"
-    rows="4"
-  ></textarea>
-
+  <textarea id="pet-personality" placeholder="Pet personality"></textarea>
   <input type="file" id="pet-image-upload" accept="image/*" />
-
-  <button id="create-pet-button">Create Pet</button>
+  <button id="create-pet-button">Create</button>
 </div>
 
-<!-- PET DISPLAY -->
-<div id="pet-display">
+<!-- PET -->
+<div class="box" id="pet-box" style="display:none">
   <img id="pet-image" />
-  <div id="speech-bubble"></div>
-</div>
-
-<!-- STATUS -->
-<div id="status">
   <p id="pet-info"></p>
-
-  <div class="stat">
-    Happiness
-    <div class="bar"><div id="happiness-bar"></div></div>
-  </div>
-
-  <div class="stat">
-    Energy
-    <div class="bar"><div id="energy-bar"></div></div>
-  </div>
-
   <p id="share-url"></p>
 </div>
 
 <!-- CONTROLS -->
-<div id="controls">
-  <button onclick="sendMessage('feed')">🍖 Feed</button>
-  <button onclick="sendMessage('play')">🎾 Play</button>
-  <button onclick="sendMessage('check mood')">😊 Mood</button>
+<div class="box" id="controls" style="display:none">
+  <button id="feed-btn">🍖 Feed</button>
+  <button id="play-btn">🎾 Play</button>
+  <button id="mood-btn">😊 Mood</button>
 </div>
 
 <!-- CHAT -->
-<div id="chat-interface">
+<div class="box" id="chat-interface" style="display:none">
   <div id="chat-output"></div>
-
-  <div id="chat-box">
-    <input id="user-input" placeholder="Say something..." />
-    <button id="send-button">➡️</button>
-  </div>
+  <input id="user-input" placeholder="Type here..." />
+  <button id="send-button">Send</button>
 </div>
 
 <script src="script.js"></script>
