@@ -26,9 +26,14 @@
 
     <textarea
       id="pet-personality"
-      placeholder="Describe your pet's personality (cute, shy, sassy, emotional, baby-like, dark, etc.)"
+      placeholder="Describe your pet's personality (cute, shy, sassy, emotional, baby-like, etc.)"
       rows="4"
     ></textarea>
+
+    <label class="custom-file-upload">
+      Upload Pet Image
+      <input type="file" id="pet-image-upload" accept="image/*" hidden />
+    </label>
 
     <button id="create-pet-button">Create Pet</button>
   </div>
