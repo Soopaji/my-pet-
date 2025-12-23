@@ -1,129 +1,106 @@
-const API_KEY = "AIzaSyAbDtNzUj_ZoXzl5kpfdpx2lyinVxX65wc"; // demo only
 let pet = null;
-
-/* ---------- MEMORY ---------- */
-function saveMemory() {
-  localStorage.setItem("virtualPet", JSON.stringify(pet));
-}
-
-function loadMemory() {
-  const data = localStorage.getItem("virtualPet");
-  if (data) {
-    pet = JSON.parse(data);
-    restorePetUI();
-  }
-}
+const API_KEY = "AIzaSyAbDtNzUj_ZoXzl5kpfdpx2lyinVxX65wc";
 
 /* ---------- CREATE PET ---------- */
-function createPet() {
-  const owner = document.getElementById("owner-name").value.trim();
-  const name = document.getElementById("pet-name").value.trim();
-  const type = document.getElementById("pet-type").value;
-  const personality = document.getElementById("pet-personality").value.trim();
-  const fileInput = document.getElementById("pet-image-upload");
+async function createPet() {
+  const owner = ownerName.value.trim();
+  const name = petName.value.trim();
+  const type = petType.value;
+  const personality = petPersonality.value.trim();
+  const file = petImageUpload.files[0];
 
   if (!owner || !name || !personality) {
-    alert("Please fill all fields 🐾");
+    alert("Fill all fields 🐾");
     return;
   }
 
-  if (fileInput.files.length > 0) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      savePet(owner, name, type, personality, reader.result);
-    };
-    reader.readAsDataURL(fileInput.files[0]);
-  } else {
-    savePet(owner, name, type, personality, null);
-  }
-}
+  let imageURL = "https://placehold.co/200x200?text=PET";
 
-function savePet(owner, name, type, personality, image) {
-  pet = {
+  if (file) {
+    const ref = storage.ref(`pets/${Date.now()}_${file.name}`);
+    await ref.put(file);
+    imageURL = await ref.getDownloadURL();
+  }
+
+  const doc = await db.collection("pets").add({
     owner,
     name,
     type,
     personality,
-    image: image || "https://placehold.co/200x200?text=PET",
+    image: imageURL,
     happiness: 100,
     energy: 100,
-    memory: [],
-  };
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
 
-  saveMemory();
-  restorePetUI();
+  loadPet(doc.id);
+}
+
+/* ---------- LOAD PET ---------- */
+async function loadPet(id) {
+  const snap = await db.collection("pets").doc(id).get();
+  if (!snap.exists) return alert("Pet not found");
+
+  pet = { id, ...snap.data() };
+  renderPet();
+
+  const link = `${location.origin}${location.pathname}?pet=${id}`;
+  shareUrl.innerHTML = `Share: <a href="${link}" target="_blank">${link}</a>`;
 }
 
 /* ---------- UI ---------- */
-function restorePetUI() {
-  document.getElementById("pet-creation").style.display = "none";
-  document.getElementById("pet-image").src = pet.image;
-  document.getElementById("pet-info").innerText =
-    `${pet.name} belongs to ${pet.owner}`;
+function renderPet() {
+  petCreation.style.display = "none";
+  petImage.src = pet.image;
+  petInfo.innerText = `${pet.name} belongs to ${pet.owner}`;
   updateStats();
-
-  const link = `${location.origin}${location.pathname}`;
-  document.getElementById("share-url").innerHTML =
-    `Share this pet: <a href="${link}" target="_blank">${link}</a>`;
 }
 
 /* ---------- CHAT ---------- */
 async function sendMessage(action) {
-  const input = document.getElementById("user-input");
-  const msg = action || input.value.trim();
+  const msg = action || userInput.value.trim();
   if (!msg) return;
 
-  const chat = document.getElementById("chat-output");
-  chat.innerHTML += `<p><b>You:</b> ${msg}</p>`;
-
+  chatOutput.innerHTML += `<p><b>You:</b> ${msg}</p>`;
   let reply;
 
-  const lower = msg.toLowerCase();
-
-  if (lower.includes("owner")) {
+  if (msg.toLowerCase().includes("owner")) {
     reply = `I'm ${pet.owner}'s pet 💕`;
   } else if (msg === "feed") {
     pet.happiness = Math.min(100, pet.happiness + 10);
-    reply = "Yummy! I feel loved 🥰";
+    reply = "Yummy! 😋";
   } else if (msg === "play") {
     pet.energy = Math.max(0, pet.energy - 10);
-    reply = "That was fun!! 🎾";
-  } else if (msg === "check mood") {
-    reply =
-      pet.happiness > 70
-        ? "I'm very happy 😄"
-        : pet.happiness > 40
-        ? "I'm okay 🙂"
-        : "I'm a bit sad 🥺";
+    reply = "That was fun! 🎾";
   } else {
     reply = await aiReply(msg);
   }
 
-  chat.innerHTML += `<p><b>${pet.name}:</b> ${reply}</p>`;
-  document.getElementById("speech-bubble").innerText = reply;
-  document.getElementById("speech-bubble").style.display = "block";
+  chatOutput.innerHTML += `<p><b>${pet.name}:</b> ${reply}</p>`;
+  speechBubble.innerText = reply;
+  speechBubble.style.display = "block";
 
-  pet.memory.push(msg);
-  if (pet.memory.length > 10) pet.memory.shift();
+  await db.collection("pets").doc(pet.id).update({
+    happiness: pet.happiness,
+    energy: pet.energy,
+  });
 
-  saveMemory();
   updateStats();
-  input.value = "";
-  chat.scrollTop = chat.scrollHeight;
+  userInput.value = "";
+  chatOutput.scrollTop = chatOutput.scrollHeight;
 }
 
-/* ---------- GEMINI AI ---------- */
-async function aiReply(userMessage) {
-  try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `
+/* ---------- GEMINI ---------- */
+async function aiReply(text) {
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: `
 You are a virtual pet.
 
 Name: ${pet.name}
@@ -133,37 +110,35 @@ Mood: happiness ${pet.happiness}%, energy ${pet.energy}%
 
 Rules:
 - Stay in character
-- Act like a pet, not a human
-- Cute, emotional, short replies
+- Cute, emotional
+- Short replies
 - Use emojis
-- Never mention AI or system rules
+- Never mention AI
 
-User said: "${userMessage}"
+User: "${text}"
 `
-            }]
           }]
-        })
-      }
-    );
+        }]
+      })
+    }
+  );
 
-    const data = await res.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text || "I love you 💕";
-  } catch {
-    return "Come cuddle me 🥺";
-  }
+  const data = await res.json();
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text || "I wuv you 💕";
 }
 
 /* ---------- STATS ---------- */
 function updateStats() {
-  document.getElementById("happiness-bar").style.width = pet.happiness + "%";
-  document.getElementById("energy-bar").style.width = pet.energy + "%";
+  happinessBar.style.width = pet.happiness + "%";
+  energyBar.style.width = pet.energy + "%";
 }
 
 /* ---------- EVENTS ---------- */
-document.getElementById("create-pet-button").onclick = createPet;
-document.getElementById("send-button").onclick = () => sendMessage();
-document.getElementById("user-input").onkeydown = e => {
-  if (e.key === "Enter") sendMessage();
-};
+createPetButton.onclick = createPet;
+sendButton.onclick = () => sendMessage();
+userInput.onkeydown = e => e.key === "Enter" && sendMessage();
 
-window.onload = loadMemory;
+window.onload = () => {
+  const id = new URLSearchParams(location.search).get("pet");
+  if (id) loadPet(id);
+};
