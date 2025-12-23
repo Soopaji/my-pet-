@@ -9,7 +9,6 @@
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
   <script>
    const firebaseConfig = {
@@ -24,7 +23,6 @@
 
     firebase.initializeApp(firebaseConfig);
     window.db = firebase.firestore();
-    window.storage = firebase.storage();
   </script>
 </head>
 
@@ -33,7 +31,7 @@
 <div id="pet-creation">
   <h1>🐾 Create Your Virtual Pet</h1>
 
-  <input id="owner-name" placeholder="Owner name" />
+  <input id="owner-name" placeholder="Your name (owner)" />
   <input id="pet-name" placeholder="Pet name" />
 
   <select id="pet-type">
@@ -46,14 +44,11 @@
 
   <textarea
     id="pet-personality"
-    placeholder="Describe pet personality (cute, shy, sassy, baby-like, emotional, etc.)"
+    placeholder="Describe your pet's personality"
     rows="4"
   ></textarea>
 
-  <label class="custom-file-upload">
-    Upload Pet Image
-    <input type="file" id="pet-image-upload" accept="image/*" hidden />
-  </label>
+  <input type="file" id="pet-image-upload" accept="image/*" />
 
   <button id="create-pet-button">Create Pet</button>
 </div>
@@ -66,20 +61,14 @@
 <div id="status">
   <p id="pet-info"></p>
 
-  <div id="pet-stats">
-    <div class="stat">
-      <label>Happiness</label>
-      <div class="progress-bar">
-        <div id="happiness-bar" class="progress-fill"></div>
-      </div>
-    </div>
+  <div class="stat">
+    Happiness
+    <div class="bar"><div id="happiness-bar"></div></div>
+  </div>
 
-    <div class="stat">
-      <label>Energy</label>
-      <div class="progress-bar">
-        <div id="energy-bar" class="progress-fill energy"></div>
-      </div>
-    </div>
+  <div class="stat">
+    Energy
+    <div class="bar"><div id="energy-bar"></div></div>
   </div>
 
   <p id="share-url"></p>
@@ -92,16 +81,11 @@
 </div>
 
 <div id="chat-interface">
-  <h2>Chat with your pet</h2>
   <div id="chat-output"></div>
-
-  <div id="chat-box">
-    <input id="user-input" placeholder="Say something..." />
-    <button id="send-button">➡️</button>
-  </div>
+  <input id="user-input" placeholder="Say something..." />
+  <button id="send-button">➡️</button>
 </div>
 
 <script src="script.js"></script>
 </body>
 </html>
-
