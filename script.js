@@ -1,7 +1,7 @@
 let pet = null;
 
 // Gemini API key
-const API_KEY = "AIzaSyAbDtNzUj_ZoXzl5kpfdpx2lyinVxX65wc";
+const API_KEY = "AIzaSyCWjlAAysIa65rncjBnn_J0UQL8qGMDACM";
 
 // Pet types
 const petTypes = {
@@ -189,10 +189,17 @@ async function sendMessage(action) {
 }
 
 // AI reply using Gemini API
-async function aiReply(text) {
+async function getAIResponse(userMessage) {
+  if (!API_KEY || API_KEY === "AIzaSyCWjlAAysIa65rncjBnn_J0UQL8qGMDACM") {
+    return (
+      (petTypes[pet.type]?.sound || "🐾") +
+      " (AI key missing, but I'm still cute! 💕)"
+    );
+  }
+
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -201,23 +208,7 @@ async function aiReply(text) {
             {
               parts: [
                 {
-                  text: `
-You are a virtual pet.
-
-Name: ${pet.name}
-
-Recent memory:
-${pet.memory.join(" | ") || "None"}
-
-Rules:
-- Act like a pet
-- Cute and emotional
-- Short replies
-- Use emojis
-- Never say you are an AI
-
-User: "${text}"
-`,
+                  text: `You are a virtual pet ${pet.type} named ${pet.name}. Reply in a cute, friendly tone to: "${userMessage}"`,
                 },
               ],
             },
@@ -226,14 +217,7 @@ User: "${text}"
       }
     );
 
-    const data = async res.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text || "I wuv you 💕";
-  } catch {
-    return "Come cuddle me 🥺";
-  }
-}
-
-    const data = async response.json();
+    const data = await response.json();
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     const sound = petTypes[pet.type]?.sound || "🐾";
@@ -286,6 +270,3 @@ window.addEventListener("load", () => {
     loadPet(petId);
   }
 });
-
-
-
