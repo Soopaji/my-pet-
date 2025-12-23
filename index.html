@@ -1,1 +1,118 @@
-<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <meta name="viewport" content="width=device-width, initial-scale=1.0" /> <title>My Virtual Pet</title> <link rel="stylesheet" href="style.css" /> <!-- Firebase App (core) --> <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script> <!-- Firestore --> <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script> <!-- Firebase Storage --> <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script> <script> const firebaseConfig = { apiKey: "AIzaSyA5iSJ7ZFH6WIX7sAA3rIctMOeuDCVcJ7M", authDomain: "my-pet-815f9.firebaseapp.com", projectId: "my-pet-815f9", storageBucket: "my-pet-815f9.appspot.com", messagingSenderId: "262016555949", appId: "1:262016555949:web:560a8a0f834e01be83df24", measurementId: "G-B82KQRJP9C" }; firebase.initializeApp(firebaseConfig); const db = firebase.firestore(); </script> </head> <body> <!-- Pet Creation Section --> <div id="pet-creation"> <h1>My Virtual Pet</h1> <h2>Name Your Virtual Pet</h2> <input type="text" id="pet-name" placeholder="Enter pet name..." /> <label class="custom-file-upload"> Upload Pet Image <input type="file" id="pet-image-upload" class="hidden-file-input" accept="image/*" /> </label> <select id="pet-type"> <option value="dog">🐶 Dog</option> <option value="cat">🐱 Cat</option> <option value="rabbit">🐰 Rabbit</option> <option value="bird">🐦 Bird</option> <option value="custom">🖼️ Custom</option> </select> <button id="create-pet-button">Create Pet</button> </div> <!-- Pet Display Section --> <div id="pet-display"> <img id="pet-image" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5QZXQgUGxhY2Vob2xkZXI8L3RleHQ+PC9zdmc+" alt="Your pet" /> <div id="speech-bubble"></div> </div> <!-- Status Section --> <div id="status"> <p id="pet-info">No pet created yet.</p> <div id="pet-stats" style="display: none;"> <div class="stat"> <label>Happiness:</label> <div class="progress-bar"> <div id="happiness-bar" class="progress-fill"></div> </div> <span id="happiness-value">100%</span> </div> <div class="stat"> <label>Energy:</label> <div class="progress-bar"> <div id="energy-bar" class="progress-fill"></div> </div> <span id="energy-value">100%</span> </div> </div> <p id="share-url"></p> </div> <!-- Controls Section --> <div id="controls"> <button onclick="sendMessage('feed')">Feed</button> <button onclick="sendMessage('play')">Play</button> <button onclick="sendMessage('check mood')">Check Mood</button> </div> <!-- Chat Interface --> <div id="chat-interface"> <h2>Chat with Your Pet</h2> <div id="chat-output"></div> <div id="chat-box"> <input type="text" id="user-input" placeholder="Say something to your pet..." /> <button id="send-button">➡️</button> </div> </div> <!-- Main logic --> <script src="script.js"></script> </body> </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Virtual Pet</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Firebase App (core) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <!-- Firestore -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <!-- Firebase Storage -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+  <script>
+    // Replace with your own Firebase config
+    const firebaseConfig = {
+      apiKey: "YOUR_FIREBASE_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID",
+      measurementId: "YOUR_MEASUREMENT_ID"
+    };
+
+    // Initialize Firebase only if config is valid
+    if (firebaseConfig.apiKey !== "YOUR_FIREBASE_API_KEY") {
+      firebase.initializeApp(firebaseConfig);
+      window.db = firebase.firestore();
+      window.storage = firebase.storage();
+    } else {
+      console.log("Firebase not configured. Please update the config in index.html");
+    }
+  </script>
+</head>
+<body>
+  <!-- Pet Creation Section -->
+  <div id="pet-creation">
+    <h1>My Virtual Pet</h1>
+    <h2>Name Your Virtual Pet</h2>
+
+    <input type="text" id="pet-name" placeholder="Enter pet name..." />
+
+    <label class="custom-file-upload">
+      Upload Pet Image
+      <input
+        type="file"
+        id="pet-image-upload"
+        class="hidden-file-input"
+        accept="image/*"
+      />
+    </label>
+
+    <select id="pet-type">
+      <option value="dog">🐶 Dog</option>
+      <option value="cat">🐱 Cat</option>
+      <option value="rabbit">🐰 Rabbit</option>
+      <option value="bird">🐦 Bird</option>
+      <option value="custom">🖼️ Custom</option>
+    </select>
+
+    <button id="create-pet-button">Create Pet</button>
+  </div>
+
+  <!-- Pet Display Section -->
+  <div id="pet-display">
+    <img id="pet-image" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5QZXQgUGxhY2Vob2xkZXI8L3RleHQ+PC9zdmc+" alt="Your pet" />
+    <div id="speech-bubble"></div>
+  </div>
+
+  <!-- Status Section -->
+  <div id="status">
+    <p id="pet-info">No pet created yet.</p>
+    <div id="pet-stats" style="display: none;">
+      <div class="stat">
+        <label>Happiness:</label>
+        <div class="progress-bar">
+          <div id="happiness-bar" class="progress-fill"></div>
+        </div>
+        <span id="happiness-value">100%</span>
+      </div>
+      <div class="stat">
+        <label>Energy:</label>
+        <div class="progress-bar">
+          <div id="energy-bar" class="progress-fill"></div>
+        </div>
+        <span id="energy-value">100%</span>
+      </div>
+    </div>
+    <p id="share-url"></p>
+  </div>
+
+  <!-- Controls Section -->
+  <div id="controls">
+    <button onclick="sendMessage('feed')">Feed</button>
+    <button onclick="sendMessage('play')">Play</button>
+    <button onclick="sendMessage('check mood')">Check Mood</button>
+  </div>
+
+  <!-- Chat Interface -->
+  <div id="chat-interface">
+    <h2>Chat with Your Pet</h2>
+    <div id="chat-output"></div>
+    <div id="chat-box">
+      <input
+        type="text"
+        id="user-input"
+        placeholder="Say something to your pet..."
+      />
+      <button id="send-button">➡️</button>
+    </div>
+  </div>
+
+  <!-- Main logic -->
+  <script src="script.js"></script>
+</body>
+</html>
