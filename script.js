@@ -1,7 +1,7 @@
 let pet = null;
 
 // Gemini API key
-const API_KEY = "AIzaSyCWjlAAysIa65rncjBnn_J0UQL8qGMDACM";
+const API_KEY = "AIzaSyAbDtNzUj_ZoXzl5kpfdpx2lyinVxX65wc";
 
 // Pet types
 const petTypes = {
@@ -142,3 +142,4 @@ window.addEventListener("load", () => {
   const id = new URLSearchParams(location.search).get("pet");
   if (id) loadPet(id);
 });
+
