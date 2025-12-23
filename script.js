@@ -1,7 +1,7 @@
 let pet = null;
 const API_KEY = "AIzaSyAbDtNzUj_ZoXzl5kpfdpx2lyinVxX65wc";
 
-/* ================= DOM ELEMENTS ================= */
+/* ================= DOM ================= */
 const petCreation = document.getElementById("pet-creation");
 const petBox = document.getElementById("pet-box");
 const controls = document.getElementById("controls");
@@ -20,12 +20,12 @@ const userInput = document.getElementById("user-input");
 const sendButton = document.getElementById("send-button");
 
 /* ================= CREATE PET ================= */
-document
-  .getElementById("create-pet-button")
-  .addEventListener("click", () => {
+const createBtn = document.getElementById("create-pet-button");
+if (createBtn) {
+  createBtn.addEventListener("click", () => {
     const owner = ownerName.value.trim();
     const name = petName.value.trim();
-    const file = petImageUpload.files[0];
+    const file = petImageUpload?.files?.[0];
 
     if (!owner || !name) {
       alert("Please enter owner name and pet name");
@@ -40,6 +40,7 @@ document
       savePet(owner, name, null);
     }
   });
+}
 
 /* ================= SAVE PET ================= */
 async function savePet(owner, name, image) {
@@ -48,7 +49,7 @@ async function savePet(owner, name, image) {
     name,
     image: image || "https://placehold.co/200x200?text=PET",
     happiness: 100,
-    memory: [], // light long-term memory
+    memory: [],
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
   };
 
@@ -66,20 +67,23 @@ async function loadPet(id) {
 
   pet = { id, ...snap.data() };
 
-  // UI state
-  petCreation.style.display = "none";
-  petCreation.style.pointerEvents = "none";
-  petBox.style.display = "block";
-  controls.style.display = "block";
-  chatUI.style.display = "block";
+  if (petCreation) {
+    petCreation.style.display = "none";
+    petCreation.style.pointerEvents = "none";
+  }
+  if (petBox) petBox.style.display = "block";
+  if (controls) controls.style.display = "block";
+  if (chatUI) chatUI.style.display = "block";
 
   petImage.src = pet.image;
   petInfo.innerText = `${pet.name} belongs to ${pet.owner}`;
 
   const link = `${location.origin}${location.pathname}?pet=${id}`;
-  shareUrl.innerHTML = `Share: <a href="${link}" target="_blank">${link}</a>`;
+  if (shareUrl) {
+    shareUrl.innerHTML = `Share: <a href="${link}" target="_blank">${link}</a>`;
+  }
 
-  // 🔑 ensure chat input works
+  // force-enable chat input
   userInput.disabled = false;
   userInput.readOnly = false;
   userInput.value = "";
@@ -92,21 +96,21 @@ async function sendMessage(text) {
 
   chatOutput.innerHTML += `<p><b>You:</b> ${text}</p>`;
 
-  // store memory (limited)
   pet.memory.push(text);
   if (pet.memory.length > 6) pet.memory.shift();
 
   let reply;
+  const lower = text.toLowerCase();
 
-  if (text.toLowerCase().includes("owner")) {
+  if (lower.includes("owner")) {
     reply = `I'm ${pet.owner}'s pet 💕`;
-  } else if (text === "feed") {
+  } else if (lower === "feed") {
     pet.happiness = Math.min(100, pet.happiness + 10);
     reply = "Yummy 😋";
-  } else if (text === "play") {
+  } else if (lower === "play") {
     pet.happiness = Math.min(100, pet.happiness + 5);
     reply = "That was fun 🎾";
-  } else if (text === "check mood") {
+  } else if (lower === "check mood") {
     reply =
       pet.happiness > 70
         ? "I'm happy 😄"
@@ -127,7 +131,7 @@ async function sendMessage(text) {
   chatOutput.scrollTop = chatOutput.scrollHeight;
 }
 
-/* ================= GEMINI AI ================= */
+/* ================= GEMINI ================= */
 async function aiReply(text) {
   try {
     const res = await fetch(
@@ -146,12 +150,12 @@ You are a virtual pet.
 Name: ${pet.name}
 Owner: ${pet.owner}
 
-Recent things you remember:
-${pet.memory.join(" | ") || "Nothing yet"}
+Recent memory:
+${pet.memory.join(" | ") || "None"}
 
 Rules:
 - Act like a pet
-- Be cute and emotional
+- Cute and emotional
 - Short replies
 - Use emojis
 - Never say you are an AI
@@ -167,41 +171,40 @@ User: "${text}"
     );
 
     const data = await res.json();
-    return (
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "I wuv you 💕"
-    );
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text || "I wuv you 💕";
   } catch {
     return "Come cuddle me 🥺";
   }
 }
 
-/* ================= EVENTS ================= */
-sendButton.addEventListener("click", () => {
-  const msg = userInput.value.trim();
-  userInput.value = "";
-  sendMessage(msg);
-});
-
-userInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
+/* ================= CHAT INPUT EVENTS ================= */
+if (sendButton) {
+  sendButton.addEventListener("click", () => {
     const msg = userInput.value.trim();
     userInput.value = "";
     sendMessage(msg);
-  }
-});
+  });
+}
 
-document
-  .getElementById("feed-btn")
-  .addEventListener("click", () => sendMessage("feed"));
+if (userInput) {
+  userInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const msg = userInput.value.trim();
+      userInput.value = "";
+      sendMessage(msg);
+    }
+  });
+}
 
-document
-  .getElementById("play-btn")
-  .addEventListener("click", () => sendMessage("play"));
+/* ================= OPTIONAL CONTROL BUTTONS ================= */
+const feedBtn = document.getElementById("feed-btn");
+if (feedBtn) feedBtn.addEventListener("click", () => sendMessage("feed"));
 
-document
-  .getElementById("mood-btn")
-  .addEventListener("click", () => sendMessage("check mood"));
+const playBtn = document.getElementById("play-btn");
+if (playBtn) playBtn.addEventListener("click", () => sendMessage("play"));
+
+const moodBtn = document.getElementById("mood-btn");
+if (moodBtn) moodBtn.addEventListener("click", () => sendMessage("check mood"));
 
 /* ================= LOAD FROM SHARE LINK ================= */
 window.addEventListener("load", () => {
