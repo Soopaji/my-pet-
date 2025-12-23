@@ -159,7 +159,7 @@ async function sendMessage(action) {
       }
       break;
     default:
-      petResponse = async getAIResponse(command);
+      petResponse = await getAIResponse(command);
       break;
   }
 
@@ -286,5 +286,6 @@ window.addEventListener("load", () => {
     loadPet(petId);
   }
 });
+
 
 
