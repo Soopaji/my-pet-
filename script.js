@@ -159,7 +159,7 @@ async function sendMessage(action) {
       }
       break;
     default:
-      petResponse = await getAIResponse(command);
+      petResponse = async getAIResponse(command);
       break;
   }
 
@@ -226,14 +226,14 @@ User: "${text}"
       }
     );
 
-    const data = await res.json();
+    const data = async res.json();
     return data?.candidates?.[0]?.content?.parts?.[0]?.text || "I wuv you 💕";
   } catch {
     return "Come cuddle me 🥺";
   }
 }
 
-    const data = await response.json();
+    const data = async response.json();
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     const sound = petTypes[pet.type]?.sound || "🐾";
@@ -286,4 +286,5 @@ window.addEventListener("load", () => {
     loadPet(petId);
   }
 });
+
 
