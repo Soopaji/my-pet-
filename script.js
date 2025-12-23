@@ -2,6 +2,7 @@ let pet = null;
 const API_KEY = "AIzaSyAbDtNzUj_ZoXzl5kpfdpx2lyinVxX65wc";
 
 // DOM
+const petCreation = document.getElementById("pet-creation");
 const ownerName = document.getElementById("owner-name");
 const petName = document.getElementById("pet-name");
 const petType = document.getElementById("pet-type");
@@ -18,8 +19,9 @@ const energyBar = document.getElementById("energy-bar");
 const chatOutput = document.getElementById("chat-output");
 const userInput = document.getElementById("user-input");
 const sendButton = document.getElementById("send-button");
+const speechBubble = document.getElementById("speech-bubble");
 
-/* ---------- CREATE PET ---------- */
+/* ---------------- CREATE PET ---------------- */
 function createPet() {
   const owner = ownerName.value.trim();
   const name = petName.value.trim();
@@ -34,14 +36,16 @@ function createPet() {
 
   if (file) {
     const reader = new FileReader();
-    reader.onload = () => savePet(owner, name, type, personality, reader.result);
+    reader.onload = () => {
+      savePet(owner, name, type, personality, reader.result);
+    };
     reader.readAsDataURL(file);
   } else {
     savePet(owner, name, type, personality, null);
   }
 }
 
-/* ---------- SAVE PET ---------- */
+/* ---------------- SAVE PET ---------------- */
 async function savePet(owner, name, type, personality, image) {
   const petData = {
     owner,
@@ -62,43 +66,51 @@ async function savePet(owner, name, type, personality, image) {
   loadPet(doc.id);
 }
 
-/* ---------- LOAD PET ---------- */
+/* ---------------- LOAD PET ---------------- */
 async function loadPet(id) {
   const snap = await db.collection("pets").doc(id).get();
-  if (!snap.exists) return alert("Pet not found");
+  if (!snap.exists) {
+    alert("Pet not found");
+    return;
+  }
 
   pet = { id, ...snap.data() };
   renderPet();
 
   const link = `${location.origin}${location.pathname}?pet=${id}`;
-  shareUrl.innerHTML = `Share: <a href="${link}" target="_blank">${link}</a>`;
+  shareUrl.innerHTML = `Share this pet: <a href="${link}" target="_blank">${link}</a>`;
 }
 
-/* ---------- UI ---------- */
+/* ---------------- UI ---------------- */
 function renderPet() {
-  document.getElementById("pet-creation").style.display = "none";
+  petCreation.style.display = "none";
+  petCreation.style.pointerEvents = "none";
+
   petImage.src = pet.image;
   petInfo.innerText = `${pet.name} belongs to ${pet.owner}`;
   updateStats();
+
+  setTimeout(() => userInput.focus(), 300);
 }
 
-/* ---------- MEMORY EXTRACTION ---------- */
+/* ---------------- MEMORY ---------------- */
 function extractMemory(msg) {
-  const lower = msg.toLowerCase();
-  if (lower.startsWith("i am ") || lower.startsWith("i'm ")) return msg;
-  if (lower.includes("my birthday")) return msg;
-  if (lower.includes("i feel")) return msg;
+  const l = msg.toLowerCase();
+  if (l.startsWith("i am ") || l.startsWith("i'm ")) return msg;
+  if (l.includes("my birthday")) return msg;
+  if (l.includes("i feel")) return msg;
   return null;
 }
 
-/* ---------- CHAT ---------- */
+/* ---------------- CHAT ---------------- */
 async function sendMessage(action) {
+  if (!pet) return;
+
   const msg = action || userInput.value.trim();
   if (!msg) return;
 
   chatOutput.innerHTML += `<p><b>You:</b> ${msg}</p>`;
 
-  // memory
   const fact = extractMemory(msg);
   if (fact) {
     pet.memory.facts.push(fact);
@@ -118,11 +130,18 @@ async function sendMessage(action) {
   } else if (msg === "play") {
     pet.energy = Math.max(0, pet.energy - 10);
     reply = "That was fun 🎾";
+  } else if (msg === "check mood") {
+    reply =
+      pet.happiness > 70 ? "I'm happy 😄" :
+      pet.happiness > 40 ? "I'm okay 🙂" :
+      "I'm sad 🥺";
   } else {
     reply = await aiReply(msg);
   }
 
   chatOutput.innerHTML += `<p><b>${pet.name}:</b> ${reply}</p>`;
+  speechBubble.innerText = reply;
+  speechBubble.style.display = "block";
 
   await db.collection("pets").doc(pet.id).update({
     happiness: pet.happiness,
@@ -135,20 +154,21 @@ async function sendMessage(action) {
   chatOutput.scrollTop = chatOutput.scrollHeight;
 }
 
-/* ---------- GEMINI ---------- */
+/* ---------------- GEMINI ---------------- */
 async function aiReply(text) {
   const facts = pet.memory.facts.join("\n") || "None";
   const recent = pet.memory.recentChats.join(" | ") || "None";
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `
 You are a virtual pet.
 
 Name: ${pet.name}
@@ -163,35 +183,38 @@ ${recent}
 
 Rules:
 - Stay in character
-- Cute and emotional
+- Cute, emotional
 - Short replies
 - Use emojis
 - Never mention AI
 
 User: "${text}"
 `
+            }]
           }]
-        }]
-      })
-    }
-  );
+        })
+      }
+    );
 
-  const data = await res.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text || "I wuv you 💕";
+    const data = await res.json();
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text || "I wuv you 💕";
+  } catch {
+    return "Come cuddle me 🥺";
+  }
 }
 
-/* ---------- STATS ---------- */
+/* ---------------- STATS ---------------- */
 function updateStats() {
   happinessBar.style.width = pet.happiness + "%";
   energyBar.style.width = pet.energy + "%";
 }
 
-/* ---------- EVENTS ---------- */
+/* ---------------- EVENTS ---------------- */
 document.getElementById("create-pet-button").onclick = createPet;
 sendButton.onclick = () => sendMessage();
 userInput.onkeydown = e => e.key === "Enter" && sendMessage();
 
-/* ---------- LOAD FROM LINK ---------- */
+/* ---------------- LOAD FROM LINK ---------------- */
 window.onload = () => {
   const id = new URLSearchParams(location.search).get("pet");
   if (id) loadPet(id);
