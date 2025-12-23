@@ -40,6 +40,14 @@ button {
   margin: 5px;
 }
 
+.custom-file-upload {
+  display: inline-block;
+  padding: 10px;
+  background: rgba(255,255,255,0.4);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
 #pet-display {
   position: relative;
   margin-top: 30px;
@@ -50,6 +58,7 @@ button {
   height: 200px;
   border-radius: 50%;
   background: #eee;
+  object-fit: cover;
 }
 
 #speech-bubble {
