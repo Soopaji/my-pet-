@@ -1,234 +1,148 @@
+const API_KEY = "AIzaSyAbDtNzUj_ZoXzl5kpfdpx2lyinVxX65wc";
+
 let pet = null;
 
-/* ============================
-   GEMINI API CONFIG
-============================ */
-const API_KEY = "AIzaSyCWjlAAysIa65rncjBnn_J0UQL8qGMDACM"; // 
+/* ---------- SAVE & LOAD MEMORY ---------- */
+function saveMemory() {
+  localStorage.setItem("virtualPet", JSON.stringify(pet));
+}
 
-/* ============================
-   PET TYPES & PERSONALITY
-============================ */
-const petTypes = {
-  dog: {
-    sound: "🐶 Woof!",
-    traits: "loyal, playful, energetic, loves attention",
-    emoji: "🐶",
-    defaultImage:
-      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjIwIiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Eb2c8L3RleHQ+PC9zdmc+",
-  },
-  cat: {
-    sound: "🐱 Meow~",
-    traits: "independent, sassy, affectionate but moody",
-    emoji: "🐱",
-    defaultImage:
-      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjIwIiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5DYXQ8L3RleHQ+PC9zdmc+",
-  },
-  rabbit: {
-    sound: "🐰 Squeak!",
-    traits: "shy, sweet, gentle, curious",
-    emoji: "🐰",
-    defaultImage:
-      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjIwIiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5SYWJiaXQ8L3RleHQ+PC9zdmc+",
-  },
-  bird: {
-    sound: "🐦 Chirp!",
-    traits: "talkative, cheerful, energetic",
-    emoji: "🐦",
-    defaultImage:
-      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjIwIiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5CaXJkPC90ZXh0Pjwvc3ZnPg==",
-  },
-  custom: {
-    sound: "💖",
-    traits: "loving, magical, friendly",
-    emoji: "✨",
-    defaultImage:
-      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjIwIiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5DdXN0b208L3RleHQ+PC9zdmc+",
-  },
-};
-
-/* ============================
-   CREATE PET
-============================ */
-async function createPet() {
-  const name = document.getElementById("pet-name").value.trim();
-  const type = document.getElementById("pet-type").value;
-  const fileInput = document.getElementById("pet-image-upload");
-
-  if (!name) {
-    alert("Please give your pet a name 🐾");
-    return;
-  }
-
-  let imageData = petTypes[type].defaultImage;
-
-  if (fileInput.files.length > 0) {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      imageData = e.target.result;
-      await savePet(name, type, imageData);
-    };
-    reader.readAsDataURL(fileInput.files[0]);
-  } else {
-    await savePet(name, type, imageData);
+function loadMemory() {
+  const data = localStorage.getItem("virtualPet");
+  if (data) {
+    pet = JSON.parse(data);
+    restorePetUI();
   }
 }
 
-async function savePet(name, type, image) {
+/* ---------- CREATE PET ---------- */
+function createPet() {
+  const owner = document.getElementById("owner-name").value.trim();
+  const name = document.getElementById("pet-name").value.trim();
+  const type = document.getElementById("pet-type").value;
+  const personality = document.getElementById("pet-personality").value.trim();
+
+  if (!owner || !name || !personality) {
+    alert("Please fill all fields 🐾");
+    return;
+  }
+
   pet = {
-    id: Date.now().toString(),
+    owner,
     name,
     type,
-    image,
+    personality,
     happiness: 100,
     energy: 100,
     memory: [],
+    image: "https://placehold.co/200x200?text=PET"
   };
 
-  document.getElementById("pet-image").src = pet.image;
-  document.getElementById(
-    "pet-info"
-  ).innerText = `${pet.name} the ${pet.type} is ready!`;
-  document.getElementById("pet-creation").style.display = "none";
-  document.getElementById("pet-stats").style.display = "block";
-  updateStats();
+  saveMemory();
+  restorePetUI();
 }
 
-/* ============================
-   CHAT & COMMANDS
-============================ */
+/* ---------- RESTORE UI ---------- */
+function restorePetUI() {
+  document.getElementById("pet-creation").style.display = "none";
+  document.getElementById("pet-image").src = pet.image;
+  document.getElementById("pet-info").innerText =
+    `${pet.name} belongs to ${pet.owner}`;
+  updateStats();
+
+  const link = `${location.origin}${location.pathname}`;
+  document.getElementById("share-url").innerHTML =
+    `Share: <a href="${link}" target="_blank">${link}</a>`;
+}
+
+/* ---------- CHAT ---------- */
 async function sendMessage(action) {
-  if (!pet) {
-    alert("Create a pet first!");
-    return;
-  }
-
   const input = document.getElementById("user-input");
+  const msg = action || input.value.trim();
+  if (!msg) return;
+
   const chat = document.getElementById("chat-output");
-  const command = action || input.value.trim();
-  if (!command) return;
+  chat.innerHTML += `<p><b>You:</b> ${msg}</p>`;
 
-  chat.innerHTML += `<p><strong>You:</strong> ${command}</p>`;
+  let reply;
 
-  let reply = "";
-
-  switch (command.toLowerCase()) {
-    case "feed":
-      pet.happiness = Math.min(100, pet.happiness + 10);
-      pet.energy = Math.min(100, pet.energy + 5);
-      reply = `${petTypes[pet.type].sound} Yum! I feel loved 💕`;
-      break;
-
-    case "play":
-      pet.happiness = Math.min(100, pet.happiness + 5);
-      pet.energy = Math.max(0, pet.energy - 10);
-      reply = `${petTypes[pet.type].sound} That was fun!! 🎾`;
-      break;
-
-    case "check mood":
-      reply =
-        pet.happiness > 80
-          ? "I'm super happy!! 😄"
-          : pet.happiness > 50
-          ? "I'm feeling okay 🙂"
-          : "I'm a bit sad… 🥺";
-      break;
-
-    default:
-      reply = await getAIResponse(command);
-      break;
+  if (msg.toLowerCase().includes("who") && msg.toLowerCase().includes("owner")) {
+    reply = `I'm ${pet.owner}'s pet 💕`;
+  } else if (msg === "feed") {
+    pet.happiness = Math.min(100, pet.happiness + 10);
+    reply = "Yummy! I love you 🥰";
+  } else if (msg === "play") {
+    pet.energy = Math.max(0, pet.energy - 10);
+    reply = "That was fun!! 🎾";
+  } else {
+    reply = await aiReply(msg);
   }
 
-  chat.innerHTML += `<p><strong>${pet.name}:</strong> ${reply}</p>`;
+  chat.innerHTML += `<p><b>${pet.name}:</b> ${reply}</p>`;
   document.getElementById("speech-bubble").innerText = reply;
   document.getElementById("speech-bubble").style.display = "block";
 
-  pet.memory.push(command);
-  if (pet.memory.length > 5) pet.memory.shift();
+  pet.memory.push(msg);
+  if (pet.memory.length > 10) pet.memory.shift();
 
-  input.value = "";
+  saveMemory();
   updateStats();
+  input.value = "";
   chat.scrollTop = chat.scrollHeight;
 }
 
-/* ============================
-   GEMINI AI RESPONSE
-============================ */
-async function getAIResponse(userMessage) {
+/* ---------- GEMINI AI ---------- */
+async function aiReply(userMessage) {
   try {
-    const mood =
-      pet.happiness > 80
-        ? "very happy"
-        : pet.happiness > 50
-        ? "calm"
-        : "sad";
-
-    const response = await fetch(
+    const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: `
+          contents: [{
+            parts: [{
+              text: `
 You are a virtual pet.
 
 Name: ${pet.name}
-Type: ${pet.type}
-Traits: ${petTypes[pet.type].traits}
-Mood: ${mood}
-Energy: ${pet.energy}%
+Owner: ${pet.owner}
+Personality: ${pet.personality}
+Mood: happiness ${pet.happiness}%, energy ${pet.energy}%
 
 Rules:
-- Reply in 1–2 sentences
-- Be cute, emotional, pet-like
+- Stay in character
+- Cute, emotional
+- Short replies
 - Use emojis
-- Never say "I don't know"
+- Never say you are an AI
 
-User said: "${userMessage}"
-`,
-                },
-              ],
-            },
-          ],
-        }),
+User: "${userMessage}"
+`
+            }]
+          }]
+        })
       }
     );
 
-    const data = await response.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    return `${petTypes[pet.type].sound} ${text || "I love chatting with you 💕"}`;
-  } catch (e) {
-    return `${petTypes[pet.type].sound} I'm cuddling you instead 🥰`;
+    const data = await res.json();
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text || "I wuv you 💕";
+  } catch {
+    return "Come cuddle me 🥺";
   }
 }
 
-/* ============================
-   UI HELPERS
-============================ */
+/* ---------- STATS ---------- */
 function updateStats() {
-  document.getElementById("happiness-bar").style.width = `${pet.happiness}%`;
-  document.getElementById("energy-bar").style.width = `${pet.energy}%`;
-  document.getElementById("happiness-value").innerText = `${pet.happiness}%`;
-  document.getElementById("energy-value").innerText = `${pet.energy}%`;
+  document.getElementById("happiness-bar").style.width = pet.happiness + "%";
+  document.getElementById("energy-bar").style.width = pet.energy + "%";
 }
 
-/* ============================
-   EVENT LISTENERS
-============================ */
-document
-  .getElementById("create-pet-button")
-  .addEventListener("click", createPet);
+/* ---------- EVENTS ---------- */
+document.getElementById("create-pet-button").onclick = createPet;
+document.getElementById("send-button").onclick = () => sendMessage();
+document.getElementById("user-input").onkeydown = e => {
+  if (e.key === "Enter") sendMessage();
+};
 
-document
-  .getElementById("send-button")
-  .addEventListener("click", () => sendMessage());
-
-document
-  .getElementById("user-input")
-  .addEventListener("keydown", (e) => {
-    if (e.key === "Enter") sendMessage();
-  });
+window.onload = loadMemory;
