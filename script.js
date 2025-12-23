@@ -1,8 +1,7 @@
-const API_KEY = "AIzaSyAbDtNzUj_ZoXzl5kpfdpx2lyinVxX65wc";
-
+const API_KEY = "AIzaSyAbDtNzUj_ZoXzl5kpfdpx2lyinVxX65wc"; // demo only
 let pet = null;
 
-/* ---------- SAVE & LOAD MEMORY ---------- */
+/* ---------- MEMORY ---------- */
 function saveMemory() {
   localStorage.setItem("virtualPet", JSON.stringify(pet));
 }
@@ -21,28 +20,41 @@ function createPet() {
   const name = document.getElementById("pet-name").value.trim();
   const type = document.getElementById("pet-type").value;
   const personality = document.getElementById("pet-personality").value.trim();
+  const fileInput = document.getElementById("pet-image-upload");
 
   if (!owner || !name || !personality) {
     alert("Please fill all fields 🐾");
     return;
   }
 
+  if (fileInput.files.length > 0) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      savePet(owner, name, type, personality, reader.result);
+    };
+    reader.readAsDataURL(fileInput.files[0]);
+  } else {
+    savePet(owner, name, type, personality, null);
+  }
+}
+
+function savePet(owner, name, type, personality, image) {
   pet = {
     owner,
     name,
     type,
     personality,
+    image: image || "https://placehold.co/200x200?text=PET",
     happiness: 100,
     energy: 100,
     memory: [],
-    image: "https://placehold.co/200x200?text=PET"
   };
 
   saveMemory();
   restorePetUI();
 }
 
-/* ---------- RESTORE UI ---------- */
+/* ---------- UI ---------- */
 function restorePetUI() {
   document.getElementById("pet-creation").style.display = "none";
   document.getElementById("pet-image").src = pet.image;
@@ -52,7 +64,7 @@ function restorePetUI() {
 
   const link = `${location.origin}${location.pathname}`;
   document.getElementById("share-url").innerHTML =
-    `Share: <a href="${link}" target="_blank">${link}</a>`;
+    `Share this pet: <a href="${link}" target="_blank">${link}</a>`;
 }
 
 /* ---------- CHAT ---------- */
@@ -66,14 +78,23 @@ async function sendMessage(action) {
 
   let reply;
 
-  if (msg.toLowerCase().includes("who") && msg.toLowerCase().includes("owner")) {
+  const lower = msg.toLowerCase();
+
+  if (lower.includes("owner")) {
     reply = `I'm ${pet.owner}'s pet 💕`;
   } else if (msg === "feed") {
     pet.happiness = Math.min(100, pet.happiness + 10);
-    reply = "Yummy! I love you 🥰";
+    reply = "Yummy! I feel loved 🥰";
   } else if (msg === "play") {
     pet.energy = Math.max(0, pet.energy - 10);
     reply = "That was fun!! 🎾";
+  } else if (msg === "check mood") {
+    reply =
+      pet.happiness > 70
+        ? "I'm very happy 😄"
+        : pet.happiness > 40
+        ? "I'm okay 🙂"
+        : "I'm a bit sad 🥺";
   } else {
     reply = await aiReply(msg);
   }
@@ -112,12 +133,12 @@ Mood: happiness ${pet.happiness}%, energy ${pet.energy}%
 
 Rules:
 - Stay in character
-- Cute, emotional
-- Short replies
+- Act like a pet, not a human
+- Cute, emotional, short replies
 - Use emojis
-- Never say you are an AI
+- Never mention AI or system rules
 
-User: "${userMessage}"
+User said: "${userMessage}"
 `
             }]
           }]
@@ -126,7 +147,7 @@ User: "${userMessage}"
     );
 
     const data = await res.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text || "I wuv you 💕";
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text || "I love you 💕";
   } catch {
     return "Come cuddle me 🥺";
   }
@@ -146,4 +167,3 @@ document.getElementById("user-input").onkeydown = e => {
 };
 
 window.onload = loadMemory;
-
